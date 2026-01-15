@@ -10,35 +10,120 @@
             <div class="book-title">书名：{{book.title}}</div>
             <div class="book-author">作者：{{book.author}}</div>
             <div class="book-type">类型：{{book.type}}</div>
-            <!-- 书籍状态：显示在读或者已读 -->
             <div class="book-status">状态：{{statusText.find(item => item.value === book.status).label}}</div>
             <div class="book-rating">
               <el-rate v-model="book.rating"
                 show-score 
                 text-color="#ff9900" 
                 score-template="{value}分" />
-                <!-- 提交评分更新在localStorage -->
-                <el-button type="primary" @click="updateRating(book)">提交评分</el-button>
-            </div>
-            <div class="book-btn">
-                <button>写笔记</button>
+              <el-button type="primary" @click="updateRating(book)">提交评分</el-button>
             </div>
             <div class="book-intro">亮点：{{book.highlight}}</div>
+            
+            <!-- 操作按钮 -->
+            <div class="book-actions">
+              <el-button size="small" type="primary" @click="editBook(book)">编辑</el-button>
+              <el-button size="small" type="danger" @click="deleteBook(book.id)">删除</el-button>
+            </div>
           </div>
         </div>
       </li>
     </ul>
+    
+    <!-- ========== 编辑弹窗（重点） ========== -->
+    <el-dialog 
+      v-model="editDialogVisible" 
+      title="编辑书籍信息" 
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="editForm" label-width="100px">
+        <!-- 书名 -->
+        <el-form-item label="书名" required>
+          <el-input 
+            v-model="editForm.title" 
+            placeholder="请输入书名"
+            maxlength="100"
+            show-word-limit
+          />
+        </el-form-item>
+        
+        <!-- 作者 -->
+        <el-form-item label="作者">
+          <el-input 
+            v-model="editForm.author" 
+            placeholder="请输入作者"
+            maxlength="50"
+          />
+        </el-form-item>
+        
+        <!-- 类型（单选） -->
+        <el-form-item label="类型">
+          <el-radio-group v-model="editForm.type">
+            <el-radio 
+              v-for="item in sortOptions.filter(s => s.value !== '1')" 
+              :key="item.value" 
+              :value="item.label"
+            >
+              {{ item.label }}
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+        
+        <!-- 阅读状态（单选） -->
+        <el-form-item label="阅读状态" required>
+          <el-radio-group v-model="editForm.status">
+            <el-radio 
+              v-for="item in statusText" 
+              :key="item.value" 
+              :value="item.value"
+            >
+              {{ item.label }}
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+        
+        <!-- 亮点 -->
+        <el-form-item label="书籍亮点">
+          <el-input 
+            v-model="editForm.highlight" 
+            type="textarea"
+            :rows="4"
+            placeholder="请输入书籍亮点或简介"
+            maxlength="500"
+            show-word-limit
+          />
+        </el-form-item>
+        
+        <!-- 封面（可选，暂时不改） -->
+        <el-form-item label="封面URL">
+          <el-input 
+            v-model="editForm.cover" 
+            placeholder="封面图片链接（可选）"
+          />
+        </el-form-item>
+      </el-form>
+      
+      <template #footer>
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitEdit">确定修改</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 
 <script setup>
-import { ref, computed, onMounted,defineProps } from 'vue';
-import bookStorage from '@/utils/bookStorage.js'; // 导入工具
-import { ElRate } from 'element-plus';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import request from '@/common/api/request.js';
 import { statusText } from '@/config/bookConfig.js';
+
+const router = useRouter();
 const booksList = ref([]);
-import request from '@/common/api/request.js'
+const editDialogVisible = ref(false);
+const editForm = ref({});
 
 
 // 获取父组件传递的排序类型
@@ -97,6 +182,87 @@ const loadBooksList = async () => {
 onMounted(() => {
   loadBooksList(); // 调用请求函数，完成数据加载
 });
+
+// ========== 编辑功能（重点） ==========
+const editBook = (book) => {
+  // 深拷贝所有需要编辑的字段
+  editForm.value = {
+    id: book.id,
+    title: book.title,
+    author: book.author,
+    type: book.type,
+    status: book.status,
+    highlight: book.highlight,
+    cover: book.cover
+  };
+  
+  console.log('准备编辑的书籍:', editForm.value);
+  editDialogVisible.value = true;
+};
+
+// 提交编辑
+const submitEdit = async () => {
+  // 1. 表单验证
+  if (!editForm.value.title || !editForm.value.title.trim()) {
+    ElMessage.error('书名不能为空');
+    return;
+  }
+  
+  if (!editForm.value.status) {
+    ElMessage.error('请选择阅读状态');
+    return;
+  }
+  
+  try {
+    // 2. 调用后端接口
+    const result = await request.$axios({
+      url: `/api/books/${editForm.value.id}`,
+      method: 'PUT',
+      data: {
+        title: editForm.value.title.trim(),
+        author: editForm.value.author || '佚名',
+        type: editForm.value.type || '其他',
+        status: editForm.value.status,
+        highlight: editForm.value.highlight || '暂无简介',
+        cover: editForm.value.cover
+      }
+    });
+    
+    console.log('编辑返回结果:', result);
+    
+    // 3. 检查返回结果
+    if (result.code === 1) {
+      ElMessage.success('✅ 修改成功');
+      editDialogVisible.value = false;
+      loadBooksList(); // 刷新列表
+    } else {
+      ElMessage.error('修改失败: ' + (result.message || '未知错误'));
+    }
+    
+  } catch (error) {
+    console.error('❌ 编辑请求失败:', error);
+    
+    // 4. 错误处理
+    if (error.response) {
+      const status = error.response.status;
+      const errorData = error.response.data;
+      
+      if (status === 409) {
+        ElMessage.error('❌ 书名已存在，请使用其他书名');
+      } else if (status === 404) {
+        ElMessage.error('❌ 书籍不存在');
+      } else if (status === 400) {
+        ElMessage.error('❌ ' + (errorData.message || '请填写完整信息'));
+      } else {
+        ElMessage.error('❌ 修改失败: ' + (errorData.message || '未知错误'));
+      }
+    } else {
+      ElMessage.error('❌ 网络错误，请检查服务器');
+    }
+  }
+};
+
+
 
 </script>
 

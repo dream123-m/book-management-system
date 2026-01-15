@@ -42,46 +42,47 @@ const goAddBooks = () => {
 </script>
 
 <style scoped>
-/* 基础布局 */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: 64px;
-  padding: 0 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 0 32px;
+  background: #faf8f3;
+  border-bottom: 1px solid #f0f0f0;
   position: relative;
   z-index: 100;
 }
 
-/* 左侧Logo区域 */
+/* 左侧Logo - 极简风格 */
 .header-left {
   flex: 0 0 auto;
 }
 
 .logo {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: white;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #333;
   margin: 0;
-  letter-spacing: 0.5px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: 3px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .logo::before {
-  content: "📚";
-  font-size: 1.8rem;
+  content: "";
+  width: 3px;
+  height: 18px;
+  background: linear-gradient(to bottom, #8b7355, #c9a96e);
+  border-radius: 2px;
 }
 
-/* 中间搜索区域 */
+/* 中间搜索区 */
 .header-center {
   flex: 1;
-  max-width: 600px;
-  margin: 0 40px;
+  max-width: 500px;
+  margin: 0 60px;
 }
 
 .search-wrapper {
@@ -93,58 +94,61 @@ const goAddBooks = () => {
   width: 100%;
 }
 
-/* 深度选择器修改Element Plus组件内部样式 */
 .search-input :deep(.el-input__wrapper) {
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  border: 1px solid #e8e8e8;
+  background: #fafafa;
+  box-shadow: none;
   transition: all 0.3s ease;
-  padding-left: 20px;
+  padding-left: 18px;
 }
 
 .search-input :deep(.el-input__wrapper:hover) {
-  background: white;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: #f5f5f5;
+  border-color: #d9d9d9;
 }
 
 .search-input :deep(.el-input__wrapper.is-focus) {
-  background: white;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: #fff;
+  border-color: #c9a96e;
+  box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.08);
 }
 
 .search-input :deep(.el-input__inner) {
   color: #333;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+}
+
+.search-input :deep(.el-input__inner::placeholder) {
+  color: #bfbfbf;
 }
 
 .search-input :deep(.el-input__prefix) {
-  color: #764ba2;
+  color: #999;
   margin-right: 8px;
 }
 
-/* 右侧按钮区域 */
+/* 右侧按钮 - 简约风格 */
 .header-right {
   flex: 0 0 auto;
 }
 
 .add-btn {
-  border-radius: 10px;
-  padding: 20px 20px;
-  margin:10px;
-  font-weight: 600;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 18px;
+  padding: 9px 20px;
+  font-weight: 400;
+  font-size: 0.9rem;
+  background: #333;
   border: none;
-  box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
-  transition: all 0.3s ease;
+  color: #fff;
+  box-shadow: none;
+  transition: all 0.25s ease;
+  letter-spacing: 0.5px;
 }
 
 .add-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
-  background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+  background: #1a1a1a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-
 </style>
