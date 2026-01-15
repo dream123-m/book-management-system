@@ -68,12 +68,11 @@ const filteredBooks = computed(() => {
   return booksList.value.filter(book => book.type === props.sortOptions.find(item => item.value === filterType).label);
 });
 
-// 初始化：从数据库加载数据
-// 【新增】：编写加载书籍数据的函数（调用 request 封装）
+// 编写加载书籍数据（调用 request 封装）
 const loadBooksList = async () => {
   try {
     const data = await request.$axios({
-      url: '/api/books',  // 改为/api/books
+      url: '/api/books',  
       method: 'GET',
       params: {}
     });
