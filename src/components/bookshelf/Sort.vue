@@ -2,13 +2,9 @@
   <div class="sort">
     <div class="sort-item">
       <!-- 引入element-plus的el-radio-group组件 -->
-      <el-radio-group v-model="sortType">
+      <el-radio-group :model-value="currentSortType"  @change="handleSortChange">
         <!-- 将 label 拆分为 value 和 label -->
-        <el-radio value="1" label="科幻" />
-        <el-radio value="2" label="言情" />
-        <el-radio value="3" label="历史" />
-        <el-radio value="4" label="文学" />
-        <el-radio value="5" label="其他" />
+        <el-radio v-for="item in sortOptions" :key="item.value" :value="item.value" :label="item.label" />
       </el-radio-group>
     </div>
   </div>
@@ -16,8 +12,28 @@
 
 <script setup>
 import { ref } from 'vue';
-// 这个 sortType 变量依然会接收到你选择的 value，比如 "1" 或 "2"
-const sortType = ref('1'); // 默认选中“科幻”
+import { defineEmits,defineProps } from 'vue'
+
+const props = defineProps({
+  currentSortType: {
+    type: String,
+    required: true
+  },
+    sortOptions: {
+    type: Array,
+    required: true
+  }
+})
+
+// 定义事件：sortChange
+const emit = defineEmits(['sortChange'])
+
+const handleSortChange = (newSortType) => {
+  console.log('子组件发送排序变化:', newSortType)
+  emit('sortChange', newSortType)
+}
+
+
 </script>
 
 <style scoped>

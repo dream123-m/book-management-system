@@ -1,15 +1,21 @@
-// vite.config.js
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-// 导入 path 模块
-import { resolve } from 'path'
+import path from 'path'
 
 export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      // 配置 '@' 指向 'src' 目录
-      '@': resolve(__dirname, 'src')
+      '@': path.resolve(__dirname, './src')
+    }
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')  // ⭐ 关键修改：去掉 /api 前缀
+      }
     }
   }
 })

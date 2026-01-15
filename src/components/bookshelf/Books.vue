@@ -1,7 +1,7 @@
 <template>
   <div class="bookshelf-content">
     <ul>
-      <li v-for="book in booksList" :key="book.id">
+      <li v-for="book in filteredBooks" :key="book.id">
         <div class="book-info">
           <div class="book-cover">
             <img :src="book.cover" alt="封面">
@@ -11,12 +11,14 @@
             <div class="book-author">作者：{{book.author}}</div>
             <div class="book-type">类型：{{book.type}}</div>
             <!-- 书籍状态：显示在读或者已读 -->
-            <div class="book-status">状态：{{book.status === 'reading' ? '在读' : '已读'}}</div>
+            <div class="book-status">状态：{{statusText.find(item => item.value === book.status).label}}</div>
             <div class="book-rating">
               <el-rate v-model="book.rating"
                 show-score 
                 text-color="#ff9900" 
                 score-template="{value}分" />
+                <!-- 提交评分更新在localStorage -->
+                <el-button type="primary" @click="updateRating(book)">提交评分</el-button>
             </div>
             <div class="book-btn">
                 <button>写笔记</button>
@@ -31,49 +33,70 @@
 
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted,defineProps } from 'vue';
 import bookStorage from '@/utils/bookStorage.js'; // 导入工具
 import { ElRate } from 'element-plus';
+import { statusText } from '@/config/bookConfig.js';
 const booksList = ref([]);
+import request from '@/common/api/request.js'
 
-// 初始化：从 localStorage 加载数据
-onMounted(() => {
-  booksList.value = bookStorage.fetch();
-  //初始化两条示例数据
-  if (booksList.value.length === 0) {
-    booksList.value = [
-      {
-        id: 1,
-        title: '活着',
-        author: '余华',
-        type: '人文',
-        status: 'read',
-        rating: 4.8,
-        cover: 'https://img9.doubanio.com/view/subject/s/public/s29869926.jpg',
-        highlight: '“活着”在我们中国的语言中充满了力量...'
-      },
-      {
-        id: 2,
-        title: '小王子',
-        author: '圣埃克苏佩里',
-        type: '科幻',
-        status: 'reading',
-        rating: 4.9,
-        cover: 'https://img9.doubanio.com/view/subject/s/public/s3254244.jpg',
-        highlight: '一个人给驯服了，就得有流泪的准备...'
-      },{
-        id: 3,
-        title: '明朝那些事儿',
-        author: '当年明月',
-        type: '历史',
-        status: 'reading',
-        rating: 4.9,
-        cover: 'https://img9.doubanio.com/view/subject/s/public/s3745215.jpg',
-        highlight: '一个人给驯服了，就得有流泪的准备...'
-      }
-    ];
-    bookStorage.save(booksList.value); // 保存初始数据
+
+// 获取父组件传递的排序类型
+const props = defineProps({
+  filterType: {
+    type: String,
+    required: true
+  },
+  sortOptions: {
+    type: Array,
+    required: true
   }
+})
+
+// 提交评分
+const updateRating = (book) => {
+  bookStorage.update(book);
+}
+
+// 根据 filterType 过滤书籍
+const filteredBooks = computed(() => {
+  const filterType = props.filterType;
+  console.log(filterType)
+  if (filterType === '1') {
+    return booksList.value; // 全部显示
+  }
+  return booksList.value.filter(book => book.type === props.sortOptions.find(item => item.value === filterType).label);
+});
+
+// 初始化：从数据库加载数据
+// 【新增】：编写加载书籍数据的函数（调用 request 封装）
+const loadBooksList = async () => {
+  try {
+    const data = await request.$axios({
+      url: '/api/books',  // 改为/api/books
+      method: 'GET',
+      params: {}
+    });
+    
+    console.log('获取到的数据:', data); // 这里打印数据，看看是什么
+    
+    if (data && Array.isArray(data)) {
+      booksList.value = data.map(book => ({
+        ...book,
+        rating: parseFloat(book.rating) || 0
+      }));
+      console.log('书籍数据加载成功：', booksList.value);
+    } else {
+      console.error('返回的数据不是数组或为空:', data);
+    }
+  } catch (error) {
+    console.error('书籍数据加载失败：', error);
+  }
+};
+
+// 初始化：从数据库加载数据
+onMounted(() => {
+  loadBooksList(); // 调用请求函数，完成数据加载
 });
 
 </script>

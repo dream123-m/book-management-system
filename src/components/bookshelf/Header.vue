@@ -22,6 +22,7 @@
       <el-button 
         type="primary" 
         class="add-btn"
+        @click="goAddBooks"
       >
         添加书籍
       </el-button>
@@ -32,6 +33,12 @@
 <script setup>
 // 导入图标组件
 import { Search} from '@element-plus/icons-vue';
+import router from '@/router'; // 导入路由实例
+
+// 跳转添加书籍页面
+const goAddBooks = () => {
+  router.push('/addbooks');
+}
 </script>
 
 <style scoped>
