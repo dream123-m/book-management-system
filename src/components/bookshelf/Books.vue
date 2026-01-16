@@ -115,18 +115,22 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import request from '@/common/api/request.js';
 import { statusText } from '@/config/bookConfig.js';
 
-const router = useRouter();
 const booksList = ref([]);
 const editDialogVisible = ref(false);
-const editForm = ref({});
+const editForm = ref({
+  id: null,
+  title: '',
+  author: '',
+  type: '',
+  status: '',
+  highlight: '',
+  cover: ''
+});
 
-
-// 获取父组件传递的排序类型
 const props = defineProps({
   filterType: {
     type: String,
@@ -136,56 +140,34 @@ const props = defineProps({
     type: Array,
     required: true
   }
-})
-
-// 提交评分
-const updateRating = (book) => {
-  bookStorage.update(book);
-}
-
-// 根据 filterType 过滤书籍
-const filteredBooks = computed(() => {
-  const filterType = props.filterType;
-  console.log(filterType)
-  if (filterType === '1') {
-    return booksList.value; // 全部显示
-  }
-  return booksList.value.filter(book => book.type === props.sortOptions.find(item => item.value === filterType).label);
 });
 
-// 编写加载书籍数据（调用 request 封装）
+// 过滤书籍列表
+const filteredBooks = computed(() => {
+  const filterType = props.filterType;
+  if (filterType === '1') {
+    return booksList.value;
+  }
+  return booksList.value.filter(book => 
+    book.type === props.sortOptions.find(item => item.value === filterType).label
+  );
+});
+
+// 加载书籍列表
 const loadBooksList = async () => {
   try {
-    const data = await request.$axios({
-      url: '/api/books',  
-      method: 'GET',
-      params: {}
-    });
-    
-    console.log('获取到的数据:', data); // 这里打印数据，看看是什么
-    
-    if (data && Array.isArray(data)) {
-      booksList.value = data.map(book => ({
-        ...book,
-        rating: parseFloat(book.rating) || 0
-      }));
-      console.log('书籍数据加载成功：', booksList.value);
-    } else {
-      console.error('返回的数据不是数组或为空:', data);
-    }
+    const res = await request.get('/api/books');
+    booksList.value = res.data.map(book => ({
+      ...book,
+      rating: parseFloat(book.rating) || 0
+    }));
+    console.log('✅ 书籍数据加载成功');
   } catch (error) {
-    console.error('书籍数据加载失败：', error);
+    console.error('❌ 加载失败:', error);
   }
 };
 
-// 初始化：从数据库加载数据
-onMounted(() => {
-  loadBooksList(); // 调用请求函数，完成数据加载
-});
-
-// ========== 编辑功能（重点） ==========
 const editBook = (book) => {
-  // 深拷贝所有需要编辑的字段
   editForm.value = {
     id: book.id,
     title: book.title,
@@ -195,15 +177,13 @@ const editBook = (book) => {
     highlight: book.highlight,
     cover: book.cover
   };
-  
-  console.log('准备编辑的书籍:', editForm.value);
+  console.log('准备编辑:', editForm.value);
   editDialogVisible.value = true;
 };
 
-// 提交编辑
 const submitEdit = async () => {
-  // 1. 表单验证
-  if (!editForm.value.title || !editForm.value.title.trim()) {
+  //  表单验证
+  if (!editForm.value.title?.trim()) {
     ElMessage.error('书名不能为空');
     return;
   }
@@ -214,56 +194,55 @@ const submitEdit = async () => {
   }
   
   try {
-    // 2. 调用后端接口
-    const result = await request.$axios({
-      url: `/api/books/${editForm.value.id}`,
-      method: 'PUT',
-      data: {
-        title: editForm.value.title.trim(),
-        author: editForm.value.author || '佚名',
-        type: editForm.value.type || '其他',
-        status: editForm.value.status,
-        highlight: editForm.value.highlight || '暂无简介',
-        cover: editForm.value.cover
-      }
+    // 发送请求
+    const res = await request.put(`/api/books/${editForm.value.id}`, {
+      title: editForm.value.title.trim(),
+      author: editForm.value.author || '佚名',
+      type: editForm.value.type || '其他',
+      status: editForm.value.status,
+      highlight: editForm.value.highlight || '暂无简介',
+      cover: editForm.value.cover
     });
-    
-    console.log('编辑返回结果:', result);
-    
-    // 3. 检查返回结果
-    if (result.code === 1) {
-      ElMessage.success('✅ 修改成功');
-      editDialogVisible.value = false;
-      loadBooksList(); // 刷新列表
-    } else {
-      ElMessage.error('修改失败: ' + (result.message || '未知错误'));
-    }
-    
+    // 关闭弹窗 + 提示
+    editDialogVisible.value = false
+    ElMessage.success(res.message || '修改成功')
+    // 重新加载列表
+    await loadBooksList()
   } catch (error) {
-    console.error('❌ 编辑请求失败:', error);
-    
-    // 4. 错误处理
-    if (error.response) {
-      const status = error.response.status;
-      const errorData = error.response.data;
-      
-      if (status === 409) {
-        ElMessage.error('❌ 书名已存在，请使用其他书名');
-      } else if (status === 404) {
-        ElMessage.error('❌ 书籍不存在');
-      } else if (status === 400) {
-        ElMessage.error('❌ ' + (errorData.message || '请填写完整信息'));
-      } else {
-        ElMessage.error('❌ 修改失败: ' + (errorData.message || '未知错误'));
-      }
-    } else {
-      ElMessage.error('❌ 网络错误，请检查服务器');
-    }
+    console.error('❌ 编辑失败:', error)
+    // 错误提示已经在拦截器中处理了
   }
 };
 
+// 删除书籍
+const deleteBook = async (bookId) => {
+  try {
+    await ElMessageBox.confirm('确定要删除这本书吗？删除后无法恢复！', '警告', {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning'
+    });
+    const res = await request.delete(`/api/books/${bookId}`);
+    ElMessage.success(res.message || '删除成功');
+    booksList.value = booksList.value.filter(book => book.id !== bookId);
+  } catch (error) {
+    if (error === 'cancel') return;
+    console.error(' 删除失败:', error);
+  }
+};
 
+const updateRating = async (book) => {
+  try {
+    await request.put(`/api/books/${book.id}/rating`, { rating: book.rating });
+    ElMessage.success('评分已更新');
+  } catch (error) {
+    console.error('评分更新失败:', error);
+  }
+};
 
+onMounted(() => {
+  loadBooksList();
+});
 </script>
 
 <style scoped>

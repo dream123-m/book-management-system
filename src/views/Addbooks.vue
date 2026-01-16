@@ -70,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { sortOptions, statusText } from '@/config/bookConfig.js'
 import request from '@/common/api/request.js'
@@ -78,32 +78,27 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter();
 
-// 表单数据
 const form = reactive({
-  cover: '',      // 封面URL
-  title: '',      // 书名
-  author: '',     // 作者
-  type: '',       // 类型
-  status: '',     // 状态
-  rating: 5.0,    // 评分
-  highlight: ''   // 亮点
+  cover: '',
+  title: '',
+  author: '',
+  type: '',
+  status: '',
+  rating: 5.0,
+  highlight: ''
 })
 
-// 封面URL变化处理
 const handleCoverUrlChange = (value) => {
-  // 清空前后的空格
   form.cover = value.trim();
 }
 
-// 封面图片URL
 const getCoverImage = () => {
   if (form.cover) {
     return form.cover;
   }
-  return '/img/cover-1.png'; // 默认封面
+  return '/img/cover-1.png';
 }
 
-// 封面提示文本
 const coverTipText = computed(() => {
   if (form.cover) {
     return '自定义封面';
@@ -111,7 +106,6 @@ const coverTipText = computed(() => {
   return '默认封面';
 })
 
-// 重置表单
 const resetForm = () => {
   form.cover = '';
   form.title = '';
@@ -125,7 +119,6 @@ const resetForm = () => {
 
 // 提交表单
 const submitForm = async () => {
-  // 验证必填字段
   if (!form.title || !form.title.trim()) {
     ElMessage.error('请填写书名');
     return;
@@ -136,7 +129,6 @@ const submitForm = async () => {
     return;
   }
   
-  // 准备提交数据
   const bookData = {
     title: form.title.trim(),
     author: form.author || '佚名',
@@ -146,51 +138,14 @@ const submitForm = async () => {
     cover: form.cover || '/img/cover-1.png',
     highlight: form.highlight || '暂无简介'
   };
-  
-  console.log('提交书籍数据:', bookData);
-  
   try {
-    const result = await request.$axios({
-      url: '/api/add/books',
-      method: 'POST',
-      data: bookData
-    });
-    
-    console.log('后端响应:', result);
-    
-    // 检查 result 是否包含 id 字段 
-    if (result && result.id) {
-      ElMessage.success('✅ 书籍添加成功！');
-      // 重置表单
-      resetForm();
-      // 跳转到书籍列表页
-      router.push('/bookshelf');
-    } else {
-      ElMessage.error('❌ 添加失败，请检查数据');
-    }
-    
+    const res = await request.post('/api/add/books', bookData);
+    ElMessage.success(res.message || '添加成功');
+    resetForm();
+    router.push('/bookshelf');
   } catch (error) {
-    console.error('❌ 提交请求失败:', error);
-    
-    // 处理特定错误
-    if (error.response) {
-      const status = error.response.status;
-      const errorData = error.response.data;
-      
-      if (status === 409) {
-        ElMessage.error('❌ ' + (errorData.message || '书名已存在，请使用其他书名'));
-      } else if (status === 400) {
-        ElMessage.error('❌ ' + (errorData.message || '请填写完整的书籍信息'));
-      } else if (status === 500) {
-        ElMessage.error('❌ 服务器内部错误，请稍后重试');
-      } else {
-        ElMessage.error('❌ 请求失败: ' + (errorData.message || '未知错误'));
-      }
-    } else if (error.request) {
-      ElMessage.error('❌ 网络错误，请检查服务器是否运行');
-    } else {
-      ElMessage.error('❌ 请求配置错误: ' + error.message);
-    }
+    console.error(' 提交失败:', error);
+    // 错误已经在拦截器中统一处理
   }
 };
 </script>
