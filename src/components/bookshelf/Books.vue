@@ -1,7 +1,7 @@
 <template>
-  <div class="bookshelf-content">
+  <div class="bookshelf-content" >
     <ul>
-      <li v-for="book in filteredBooks" :key="book.id">
+      <li v-for="book in filteredBooks" :key="book.id" @click="gotoDetails(book)">
         <div class="book-info">
           <div class="book-cover">
             <img :src="book.cover" alt="封面">
@@ -11,17 +11,25 @@
             <div class="book-author">作者：{{book.author}}</div>
             <div class="book-type">类型：{{book.type}}</div>
             <div class="book-status">状态：{{statusText.find(item => item.value === book.status).label}}</div>
-            <div class="book-rating">
-              <el-rate v-model="book.rating"
-                show-score 
-                text-color="#ff9900" 
-                score-template="{value}分" />
-              <el-button type="primary" @click="updateRating(book)">提交评分</el-button>
+            <div class="book-rating" >
+              <!-- 阻止评分组件的事件冒泡 -->
+              <el-rate v-model="book.rating" show-score text-color="#ff9900" score-template="{value}分" @click.stop/>
+              <el-button type="primary" @click.stop="updateRating(book)">提交评分</el-button>
             </div>
-            <div class="book-intro">亮点：{{book.highlight}}</div>
+            <div class="book-intro" >亮点：{{book.highlight}}</div>
+
+            <!-- 阅读进度（新增） -->
+            <div class="book-progress">
+              <span class="progress-label">阅读进度：</span>
+              <!-- 确保是数字 -->
+             <el-progress :percentage="Number(book.latestProgress) || 0" :color="getProgressColor(book.latestProgress)" :stroke-width="10"/>
+              <span class="progress-text">
+                {{ book.latestProgress ? `${parseFloat(book.latestProgress).toFixed(1)}%` : '未开始' }}
+              </span>
+            </div>
             
             <!-- 操作按钮 -->
-            <div class="book-actions">
+            <div class="book-actions" @click.stop>
               <el-button size="small" type="primary" @click="editBook(book)">编辑</el-button>
               <el-button size="small" type="danger" @click="deleteBook(book.id)">删除</el-button>
             </div>
@@ -30,19 +38,13 @@
       </li>
     </ul>
     
-    <!-- ========== 编辑弹窗（重点） ========== -->
-    <el-dialog 
-      v-model="editDialogVisible" 
-      title="编辑书籍信息" 
-      width="600px"
-      :close-on-click-modal="false"
+    <!-- 编辑弹窗-->
+    <el-dialog v-model="editDialogVisible" title="编辑书籍信息" width="600px" :close-on-click-modal="false"
     >
       <el-form :model="editForm" label-width="100px">
         <!-- 书名 -->
         <el-form-item label="书名" required>
-          <el-input 
-            v-model="editForm.title" 
-            placeholder="请输入书名"
+          <el-input v-model="editForm.title" placeholder="请输入书名"
             maxlength="100"
             show-word-limit
           />
@@ -50,11 +52,7 @@
         
         <!-- 作者 -->
         <el-form-item label="作者">
-          <el-input 
-            v-model="editForm.author" 
-            placeholder="请输入作者"
-            maxlength="50"
-          />
+          <el-input v-model="editForm.author" placeholder="请输入作者" maxlength="50" />
         </el-form-item>
         
         <!-- 类型（单选） -->
@@ -73,10 +71,7 @@
         <!-- 阅读状态（单选） -->
         <el-form-item label="阅读状态" required>
           <el-radio-group v-model="editForm.status">
-            <el-radio 
-              v-for="item in statusText" 
-              :key="item.value" 
-              :value="item.value"
+            <el-radio v-for="item in statusText" :key="item.value" :value="item.value"   
             >
               {{ item.label }}
             </el-radio>
@@ -85,22 +80,12 @@
         
         <!-- 亮点 -->
         <el-form-item label="书籍亮点">
-          <el-input 
-            v-model="editForm.highlight" 
-            type="textarea"
-            :rows="4"
-            placeholder="请输入书籍亮点或简介"
-            maxlength="500"
-            show-word-limit
-          />
+          <el-input v-model="editForm.highlight" type="textarea" :rows="4" placeholder="请输入书籍亮点或简介" maxlength="500" show-word-limit />
         </el-form-item>
         
         <!-- 封面（可选，暂时不改） -->
         <el-form-item label="封面URL">
-          <el-input 
-            v-model="editForm.cover" 
-            placeholder="封面图片链接（可选）"
-          />
+          <el-input v-model="editForm.cover" placeholder="封面图片链接（可选）" />
         </el-form-item>
       </el-form>
       
@@ -115,10 +100,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import request from '@/common/api/request.js';
 import { statusText } from '@/config/bookConfig.js';
 
+const router = useRouter();
 const booksList = ref([]);
 const editDialogVisible = ref(false);
 const editForm = ref({
@@ -142,7 +129,6 @@ const props = defineProps({
   }
 });
 
-// 过滤书籍列表
 const filteredBooks = computed(() => {
   const filterType = props.filterType;
   if (filterType === '1') {
@@ -153,20 +139,39 @@ const filteredBooks = computed(() => {
   );
 });
 
-// 加载书籍列表
+// 加载书籍列表   确保所有数字字段都转换
 const loadBooksList = async () => {
   try {
     const res = await request.get('/api/books');
     booksList.value = res.data.map(book => ({
       ...book,
-      rating: parseFloat(book.rating) || 0
+      rating: Number(book.rating) || 0,
+      latestProgress: Number(book.latestProgress) || 0  
     }));
-    console.log('✅ 书籍数据加载成功');
+    console.log('书籍数据加载成功');
   } catch (error) {
-    console.error('❌ 加载失败:', error);
+    console.error('加载失败:', error);
   }
 };
 
+// 进度条颜色
+const getProgressColor = (progress) => {
+  const p = parseFloat(progress) || 0;
+  if (p >= 80) return '#67c23a'; // 绿色
+  if (p >= 50) return '#409eff'; // 蓝色
+  if (p >= 20) return '#e6a23c'; // 橙色
+  return '#f56c6c'; // 红色
+};
+
+// 跳转详情页
+const gotoDetails = (book) => {
+  router.push({
+    path: '/booksdetails',
+    query: { id: book.id }
+  });
+};
+
+// 编辑书籍
 const editBook = (book) => {
   editForm.value = {
     id: book.id,
@@ -177,24 +182,20 @@ const editBook = (book) => {
     highlight: book.highlight,
     cover: book.cover
   };
-  console.log('准备编辑:', editForm.value);
   editDialogVisible.value = true;
 };
 
+// 提交编辑
 const submitEdit = async () => {
-  //  表单验证
   if (!editForm.value.title?.trim()) {
     ElMessage.error('书名不能为空');
     return;
   }
-  
   if (!editForm.value.status) {
     ElMessage.error('请选择阅读状态');
     return;
   }
-  
   try {
-    // 发送请求
     const res = await request.put(`/api/books/${editForm.value.id}`, {
       title: editForm.value.title.trim(),
       author: editForm.value.author || '佚名',
@@ -203,17 +204,13 @@ const submitEdit = async () => {
       highlight: editForm.value.highlight || '暂无简介',
       cover: editForm.value.cover
     });
-    // 关闭弹窗 + 提示
-    editDialogVisible.value = false
-    ElMessage.success(res.message || '修改成功')
-    // 重新加载列表
-    await loadBooksList()
+    ElMessage.success(res.message || '修改成功');
+    editDialogVisible.value = false;
+    await loadBooksList();
   } catch (error) {
-    console.error('❌ 编辑失败:', error)
-    // 错误提示已经在拦截器中处理了
+    console.error(' 编辑失败:', error);
   }
 };
-
 // 删除书籍
 const deleteBook = async (bookId) => {
   try {
@@ -230,13 +227,13 @@ const deleteBook = async (bookId) => {
     console.error(' 删除失败:', error);
   }
 };
-
+// 更新评分
 const updateRating = async (book) => {
   try {
     await request.put(`/api/books/${book.id}/rating`, { rating: book.rating });
     ElMessage.success('评分已更新');
   } catch (error) {
-    console.error('评分更新失败:', error);
+    console.error(' 评分更新失败:', error);
   }
 };
 
@@ -246,6 +243,32 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
+  /* 新增：进度条样式 */
+.book-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.progress-label {
+  font-size: 0.9rem;
+  color: #5a4a3a;
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.progress-text {
+  font-size: 0.85rem;
+  color: #8b7355;
+  min-width: 60px;
+  text-align: right;
+}
+
+.book-progress :deep(.el-progress__text) {
+  display: none; /* 隐藏默认的百分比显示 */
+}
 .bookshelf-content {
   padding: 20px 24px;
   max-width: auto;

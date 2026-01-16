@@ -8,11 +8,7 @@
     <!-- 中间区域：搜索框 -->
     <div class="header-center">
       <div class="search-wrapper">
-        <el-input 
-          placeholder="请输入书名、作者或关键词" 
-          :prefix-icon="Search"
-          clearable
-          class="search-input"
+        <el-input placeholder="请输入书名、作者或关键词"  :prefix-icon="Search"clearable class="search-input"
         />
       </div>
     </div>
