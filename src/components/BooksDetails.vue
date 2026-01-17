@@ -330,6 +330,8 @@ onMounted(() => {
   margin: 0 auto;
   background: #faf8f3;
   min-height: calc(100vh - 64px);
+  font-family: "Microsoft YaHei UI", "PingFang SC", "Hiragino Sans GB", "STKaiti", "KaiTi", sans-serif;
+  font-size: 1.08rem;
 }
 
 /* 左侧：图书信息 */
@@ -356,14 +358,14 @@ onMounted(() => {
 }
 
 .book-info-section h2 {
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   color: #3d3020;
   margin-bottom: 16px;
-  font-family: 'STKaiti', 'KaiTi', serif;
+  font-family: "Microsoft YaHei UI", "PingFang SC", "Hiragino Sans GB", "STKaiti", "KaiTi", serif;
 }
 
 .meta-info {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   color: #5a4a3a;
   margin-bottom: 8px;
 }
@@ -388,7 +390,7 @@ onMounted(() => {
 }
 
 .section-title {
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: #5a4a3a;
   margin-bottom: 12px;
@@ -397,7 +399,7 @@ onMounted(() => {
 .highlight-text {
   line-height: 1.8;
   color: #3d3020;
-  font-family: 'STKaiti', 'KaiTi', serif;
+  font-family: "Microsoft YaHei UI", "PingFang SC", "Hiragino Sans GB", "STKaiti", "KaiTi", serif;
 }
 
 .action-btns {
@@ -408,7 +410,11 @@ onMounted(() => {
 }
 
 .action-btns :deep(.el-button) {
-width: 100%;
+  margin: 0 !important; /* 解决左侧 margin 错位问题 */
+  width: 100%;
+  padding: 12px 20px !important;
+  font-size: 1.05rem;
+  font-family: "Microsoft YaHei UI", "PingFang SC", "Hiragino Sans GB", sans-serif;
 }
 /* 右侧：阅读记录 */
 .records-section {
@@ -425,12 +431,13 @@ align-items: center;
 margin-bottom: 24px;
 }
 .section-header h3 {
-font-size: 1.3rem;
+font-size: 1.5rem;
 color: #3d3020;
 margin: 0;
+font-family: "Microsoft YaHei UI", "PingFang SC", "Hiragino Sans GB", "STKaiti", "KaiTi", serif;
 }
 .record-count {
-font-size: 0.9rem;
+font-size: 1.05rem;
 color: #8b7355;
 }
 .record-header {
@@ -442,7 +449,7 @@ flex-wrap: wrap;
 }
 .pages-info,
 .duration-info {
-font-size: 0.9rem;
+font-size: 1.05rem;
 color: #5a4a3a;
 }
 .notes-section {
@@ -453,7 +460,7 @@ border-radius: 8px;
 border-left: 3px solid #c9a96e;
 }
 .notes-title {
-font-size: 0.9rem;
+font-size: 1.05rem;
 font-weight: 600;
 color: #5a4a3a;
 margin-bottom: 12px;
@@ -461,12 +468,13 @@ margin-bottom: 12px;
 .notes-content {
 line-height: 1.8;
 color: #3d3020;
-font-family: 'STKaiti', 'KaiTi', serif;
+font-family: "Microsoft YaHei UI", "PingFang SC", "Hiragino Sans GB", "STKaiti", "KaiTi", serif;
 white-space: pre-wrap;
+font-size: 1.05rem;
 }
 /* 表单样式 */
 .form-tip {
-font-size: 0.85rem;
+font-size: 0.95rem;
 color: #8b7355;
 margin-top: 4px;
 }
@@ -480,7 +488,7 @@ width: 100%;
 flex: 1;
 }
 .progress-value {
-font-size: 1.2rem;
+font-size: 1.3rem;
 font-weight: 600;
 color: #409eff;
 min-width: 60px;

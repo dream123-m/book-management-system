@@ -154,9 +154,7 @@ const submitForm = async () => {
 /* 整体容器 */
 .addbooks-header {
   text-align: center;
-  padding: 50px 0 30px;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  margin-bottom: 30px;
 }
 
 .addbooks-header h1 {

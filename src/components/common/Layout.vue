@@ -2,7 +2,7 @@
   <div class="layout">
     <!-- 侧边栏 -->
     <aside class="layout-sidebar">
-      <div class="logo">📚 图书管理</div>
+      <div class="logo">📖 图书管理系统</div>
       <el-menu 
         :default-active="activeIndex" 
         class="sidebar-menu"
@@ -56,7 +56,6 @@ watch(() => route.path, (newPath) => {
   background-color: #f5f3ef;
 }
 
-/* ===== 左侧书柜感侧边栏 ===== */
 .layout-sidebar {
   width: 200px;
   background-color: #2f343a;
@@ -83,7 +82,7 @@ watch(() => route.path, (newPath) => {
   border-right: none;
 }
 
-/* ===== 菜单项 ===== */
+/*菜单项  */
 :deep(.el-menu-item) {
   padding-left: 24px !important;
   margin: 6px 10px;
@@ -93,20 +92,17 @@ watch(() => route.path, (newPath) => {
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* hover：像书页被翻动 */
 :deep(.el-menu-item:hover) {
   background-color: rgba(255, 255, 255, 0.06) !important;
   color: #ffffff !important;
 }
 
-/* 选中态：重点但不张扬 */
 :deep(.el-menu-item.is-active) {
   background-color: rgba(198, 174, 120, 0.18) !important;
   color: #f3ead7 !important;
   font-weight: 600;
 }
 
-/* icon 统一压低存在感 */
 :deep(.el-icon) {
   color: #bfc5c9;
 }
@@ -115,7 +111,7 @@ watch(() => route.path, (newPath) => {
   color: #c6ae78;
 }
 
-/* ===== 右侧内容区 ===== */
+/*右侧内容区 */
 .layout-main-container {
   flex: 1;
   display: flex;

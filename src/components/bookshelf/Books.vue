@@ -256,24 +256,25 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
   /* 新增：进度条样式 */
 .book-progress {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
+  font-size: 1.05rem;
 }
 
 .progress-label {
-  font-size: 0.9rem;
+  font-size: 1.0rem;
   color: #5a4a3a;
   white-space: nowrap;
   min-width: 80px;
 }
 
 .progress-text {
-  font-size: 0.85rem;
+  /* 1. 字体放大 */
+  font-size: 0.95rem;
   color: #8b7355;
   min-width: 60px;
   text-align: right;
@@ -282,10 +283,12 @@ onMounted(() => {
 .book-progress :deep(.el-progress__text) {
   display: none; /* 隐藏默认的百分比显示 */
 }
+
 .bookshelf-content {
   padding: 20px 24px;
   max-width: auto;
   margin: 0 auto;
+  font-size: 1.08rem; 
 }
 
 .bookshelf-content ul {
@@ -294,10 +297,9 @@ onMounted(() => {
   /* 核心：三列网格布局 */
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 一行三列 */
-  gap: 48px; /* 卡片间距 */
+  gap: 48px; 
 }
 
-/* 卡片基础样式 */
 .bookshelf-content li {
   background: #fff;
   border-radius: 12px;
@@ -306,9 +308,8 @@ onMounted(() => {
   border: 1px solid #f0f0f0;
   transition: all 0.3s ease;
   cursor: pointer;
-  /* 内部采用左右布局 */
   display: flex;
-  height: 440px; /* 固定高度，让一行整齐 */
+  height: 440px;
 }
 
 .bookshelf-content li:hover {
@@ -321,10 +322,8 @@ onMounted(() => {
 .book-info {
   display: flex;
   width: 100%;
-  /* 默认即为 row，文字在左，图片在右 */
 }
 
-/* 左侧：文字详情区域 */
 .book-detail {
   flex: 1;
   padding: 18px;
@@ -333,70 +332,133 @@ onMounted(() => {
   min-width: 0; /* 防止文本溢出 */
 }
 
-.book-title {
-  font-size: 1.15rem;
+.book-title {  
+  font-size: 1.3rem;
   font-weight: 600;
   color: #1a1a1a;
   margin-bottom: 6px;
   line-height: 1.4;
-  /* 标题过长显示省略号 */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .book-author {
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   color: #666;
   margin-bottom: 12px;
 }
 
-/* 修改点2：标签、状态、评分在同一行 */
 .book-meta {
   display: flex;
   align-items: center;
-  gap: 10px; /* 元素间间距 */
+  gap: 10px; 
   margin-bottom: 15px;
-  flex-wrap: wrap; /* 如果空间不足可以换行 */
+  flex-wrap: wrap;
 }
 
 .book-type,
 .book-status {
-  font-size: 0.75rem;
-  padding: 3px 10px;
-  border-radius: 20px;
+  font-size: 0.95rem;
+  padding: 5px 12px;
+  border-radius: 8px; 
   font-weight: 500;
   white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06); 
+  transition: all 0.2s ease;
 }
 
 .book-type {
-  background-color: #f0f7ff;
-  color: #1890ff;
-  border: 1px solid #d1e9ff;
+  background-color: #f7f9fc; 
+  color: #4a6fa5; 
+  border: 1px solid #e4ebf5; 
+}
+
+.book-type:hover {
+  background-color: #eef2f7;
 }
 
 .book-status.reading {
-  background-color: #fff7e6;
-  color: #fa8c16;
-  border: 1px solid #ffe7ba;
-}
-.book-status.read {
-  background-color: #f6ffed;
-  color: #52c41a;
-  border: 1px solid #d9f7be;
+  background-color: #fefbf3;
+  color: #b8860b; 
+  border: 1px solid #faf0d7;
 }
 
-/* 评分组件适配 */
+.book-status.read {
+  background-color: #f8fbf8; 
+  color: #5a8b5a; 
+  border: 1px solid #eaf3ea;
+}
+
+.book-status:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
 .book-rating {
+  margin-top: 12px;
   display: flex;
   align-items: center;
+  gap: 15px; 
 }
+
 .book-rating :deep(.el-rate) {
   display: flex;
 }
+
 .book-rating :deep(.el-rate__icon) {
-  font-size: 0.9rem !important;
+  /* 评分图标轻微放大，适配整体字体 */
+  font-size: 1.05rem !important;
   margin-right: 1px;
+}
+
+/* 穿透修改提交评分按钮，打造简约文艺风 */
+.book-rating :deep(.el-button) {
+  padding: 6px 14px;
+  background-color: #f7f5f2; 
+  color: #8b7355;
+  border: 1px solid #e9e2d9; 
+  border-radius: 8px;
+  font-size: 0.95rem; 
+  box-shadow: none; 
+  transition: all 0.2s ease;
+}
+
+.book-rating :deep(.el-button:hover) {
+  background-color: #e9e2d9; 
+  color: #6b5b45;
+  border-color: #d8cbc0;
+  transform: translateY(-1px); 
+}
+
+.book-rating :deep(.el-button--primary) {
+  --el-button-primary-bg-color: transparent;
+  --el-button-primary-border-color: transparent;
+  --el-button-primary-hover-bg-color: transparent;
+  --el-button-primary-hover-border-color: transparent;
+  --el-button-primary-active-bg-color: transparent;
+  --el-button-primary-active-border-color: transparent;
+}
+
+/* 美化阅读进度条 */
+.book-progress :deep(.el-progress) {
+  flex: 1;
+}
+
+.book-progress :deep(.el-progress__bar) {
+  border-radius: 5px; 
+  height: 10px; 
+}
+
+.book-progress :deep(.el-progress__bar__outer) {
+  background-color: #f7f5f2; 
+  border: 1px solid #e9e2d9; 
+  border-radius: 5px;
+}
+
+.book-progress :deep(.el-progress__bar__inner) {
+  border-radius: 4px;
+  background: linear-gradient(to right, var(--el-color-primary-light-3), var(--el-color-primary)) !important;
 }
 
 /* 亮点介绍 */
@@ -404,7 +466,8 @@ onMounted(() => {
   flex-grow: 1;
   color: #595959;
   line-height: 1.5;
-  font-size: 0.85rem;
+  /*  字体放大 */
+  font-size: 0.98rem;
   margin-bottom: 15px;
   /* 限制显示行数 */
   display: -webkit-box;
@@ -419,30 +482,9 @@ onMounted(() => {
   margin-top: auto; /* 将按钮推到底部 */
 }
 
-/* 修改点3：美化写笔记按钮 */
-.book-btn {
-  padding: 8px 16px;
-  background: transparent;
-  border: 1.5px solid #d9d9d9;
-  border-radius: 6px;
-  color: #595959;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.book-btn:hover {
-  background-color: #fafafa;
-  border-color: #1890ff;
-  color: #1890ff;
-}
-
 .btn-icon {
-  font-size: 0.9rem;
+  /* 图标轻微放大 */
+  font-size: 1.0rem;
 }
 
 /* 右侧：封面区域 */
