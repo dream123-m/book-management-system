@@ -71,8 +71,7 @@
         <!-- 阅读状态（单选） -->
         <el-form-item label="阅读状态" required>
           <el-radio-group v-model="editForm.status">
-            <el-radio v-for="item in statusText" :key="item.value" :value="item.value"   
-            >
+            <el-radio v-for="item in statusText" :key="item.value" :value="item.value">
               {{ item.label }}
             </el-radio>
           </el-radio-group>
@@ -99,7 +98,7 @@
 
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import request from '@/common/api/request.js';
@@ -126,6 +125,10 @@ const props = defineProps({
   sortOptions: {
     type: Array,
     required: true
+  },
+  searchValue: {
+    type: String,
+    default: ''
   }
 });
 
@@ -139,10 +142,14 @@ const filteredBooks = computed(() => {
   );
 });
 
-// 加载书籍列表   确保所有数字字段都转换
+// 加载书籍列表,确保所有数字字段都转换
 const loadBooksList = async () => {
   try {
-    const res = await request.get('/api/books');
+    const res = await request.get('/api/books',{
+      params: {
+        searchName: props.searchValue
+      }
+    });
     booksList.value = res.data.map(book => ({
       ...book,
       rating: Number(book.rating) || 0,
@@ -236,6 +243,12 @@ const updateRating = async (book) => {
     console.error(' 评分更新失败:', error);
   }
 };
+
+// 监听搜索值变化
+watch(() => props.searchValue, () => {
+   console.log('搜索关键词变化:', props.searchValue);
+  loadBooksList();
+});
 
 onMounted(() => {
   loadBooksList();

@@ -53,50 +53,69 @@ watch(() => route.path, (newPath) => {
   display: flex;
   height: 100vh;
   overflow: hidden;
+  background-color: #f5f3ef;
 }
 
+/* ===== 左侧书柜感侧边栏 ===== */
 .layout-sidebar {
-  /* px-to-viewport-ignore-next */
-  width: 200px; /* PC 网页侧边栏 180-220px 比较合适 */
-  background-color: #304156;
+  width: 200px;
+  background-color: #2f343a;
   display: flex;
   flex-direction: column;
-  flex-shrink: 0; /* 防止被压缩 */
+  flex-shrink: 0;
 }
 
+/* Logo：像馆藏标题 */
 .logo {
-  color: white;
-  /* px-to-viewport-ignore-next */
-  padding: 20px;
-  /* px-to-viewport-ignore-next */
-  font-size: 1.1rem;
-  font-weight: bold;
+  color: #eae7e2;
+  padding: 22px 16px;
+  font-size: 1.05rem;
+  font-weight: 500;
   text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  letter-spacing: 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* 菜单 */
 .sidebar-menu {
   flex: 1;
+  background-color: transparent;
   border-right: none;
 }
 
-/* 菜单项样式优化 */
+/* ===== 菜单项 ===== */
 :deep(.el-menu-item) {
-  /* px-to-viewport-ignore-next */
-  padding-left: 20px !important;
-  border-left: 3px solid transparent;
-  transition: all 0.3s;
+  padding-left: 24px !important;
+  margin: 6px 10px;
+  border-radius: 6px;
+  color: #cfd3d6 !important;
+  font-size: 0.95rem;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-:deep(.el-menu-item.is-active) {
-  background-color: rgba(64, 158, 255, 0.15) !important;
-  border-left-color: #409EFF;
-}
-
+/* hover：像书页被翻动 */
 :deep(.el-menu-item:hover) {
-  background-color: rgba(64, 158, 255, 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
 }
 
+/* 选中态：重点但不张扬 */
+:deep(.el-menu-item.is-active) {
+  background-color: rgba(198, 174, 120, 0.18) !important;
+  color: #f3ead7 !important;
+  font-weight: 600;
+}
+
+/* icon 统一压低存在感 */
+:deep(.el-icon) {
+  color: #bfc5c9;
+}
+
+:deep(.el-menu-item.is-active .el-icon) {
+  color: #c6ae78;
+}
+
+/* ===== 右侧内容区 ===== */
 .layout-main-container {
   flex: 1;
   display: flex;
@@ -106,9 +125,9 @@ watch(() => route.path, (newPath) => {
 
 .layout-main {
   flex: 1;
-  /* px-to-viewport-ignore-next */
-  padding: 5px;
+  padding: 12px;
   overflow-y: auto;
-  background-color: #f0f2f5;
+  background-color: #f5f3ef;
 }
+
 </style>

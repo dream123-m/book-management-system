@@ -6,20 +6,19 @@
     </div>
     
     <!-- 中间区域：搜索框 -->
-    <div class="header-center">
+ <div class="header-center">
       <div class="search-wrapper">
-        <el-input placeholder="请输入书名、作者或关键词"  :prefix-icon="Search"clearable class="search-input"
+             <el-input 
+          v-model="searchValue" placeholder="请输入书名、作者、状态等关键词，按回车搜索" :prefix-icon="Search" clearable class="search-input"
+          @keyup.enter="handleSearch"
+          @clear="handleClear"
         />
       </div>
     </div>
     
     <!-- 右侧区域：操作按钮 -->
     <div class="header-right">
-      <el-button 
-        type="primary" 
-        class="add-btn"
-        @click="goAddBooks"
-      >
+      <el-button type="primary" class="add-btn" @click="goAddBooks" >
         添加书籍
       </el-button>
     </div>
@@ -28,8 +27,27 @@
 
 <script setup>
 // 导入图标组件
+import {ref} from 'vue'
 import { Search} from '@element-plus/icons-vue';
 import router from '@/router'; // 导入路由实例
+
+// 搜索框输入值
+const searchValue = ref('');
+// 向父组件传递搜索关键词
+const emit = defineEmits(['search']);
+
+// 处理搜索
+const handleSearch = () => {
+emit('search',searchValue.value)
+};
+
+// 处理搜索框清空
+const handleClear = () => {
+  searchValue.value = '';
+  emit('search','')
+};
+
+
 
 // 跳转添加书籍页面
 const goAddBooks = () => {
