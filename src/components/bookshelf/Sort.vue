@@ -11,27 +11,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { useBookStore } from '@/stores/useBookStore.js'
+import { sortOptions } from '@/config/bookConfig.js'
 
-const props = defineProps({
-  currentSortType: {
-    type: String,
-    required: true
-  },
-    sortOptions: {
-    type: Array,
-    required: true
-  }
-})
-
-// 定义事件：sortChange
-const emit = defineEmits(['sortChange'])
-
+const bookStore = useBookStore()
+ 
 const handleSortChange = (newSortType) => {
-  console.log('子组件发送排序变化:', newSortType)
-  emit('sortChange', newSortType)
+  bookStore.setFilterType(newSortType)
 }
-
 
 </script>
 

@@ -30,6 +30,8 @@
 import {ref} from 'vue'
 import { Search} from '@element-plus/icons-vue';
 import router from '@/router'; // 导入路由实例
+import { useBookStore } from '@/stores/useBookStore.js'  
+
 
 // 搜索框输入值
 const searchValue = ref('');
@@ -38,20 +40,18 @@ const emit = defineEmits(['search']);
 
 // 处理搜索
 const handleSearch = () => {
-emit('search',searchValue.value)
-};
+  bookStore.setSearch(searchValue.value)
+}
 
 // 处理搜索框清空
 const handleClear = () => {
-  searchValue.value = '';
-  emit('search','')
-};
-
-
+  searchValue.value = ''
+  bookStore.setSearch('')
+}
 
 // 跳转添加书籍页面
 const goAddBooks = () => {
-  router.push('/addbooks');
+  router.push('/addbooks')
 }
 </script>
 

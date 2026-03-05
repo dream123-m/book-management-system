@@ -1,7 +1,7 @@
 <template>
   <div class="bookshelf-content" >
     <ul>
-      <li v-for="book in filteredBooks" :key="book.id" @click="gotoDetails(book)">
+      <li v-for="book in bookStore.filteredBooks" :key="book.id" @click="gotoDetails(book)">
         <div class="book-info">
           <div class="book-cover">
             <img :src="book.cover" alt="封面">
@@ -98,14 +98,16 @@
 
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref,onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import request from '@/common/api/request.js';
 import { statusText } from '@/config/bookConfig.js';
+import { useBookStore } from '@/stores/useBookStore.js' 
 
-const router = useRouter();
-const booksList = ref([]);
+const router = useRouter()
+const bookStore = useBookStore() 
+
 const editDialogVisible = ref(false);
 const editForm = ref({
   id: null,
@@ -116,50 +118,6 @@ const editForm = ref({
   highlight: '',
   cover: ''
 });
-
-const props = defineProps({
-  filterType: {
-    type: String,
-    required: true
-  },
-  sortOptions: {
-    type: Array,
-    required: true
-  },
-  searchValue: {
-    type: String,
-    default: ''
-  }
-});
-
-const filteredBooks = computed(() => {
-  const filterType = props.filterType;
-  if (filterType === '1') {
-    return booksList.value;
-  }
-  return booksList.value.filter(book => 
-    book.type === props.sortOptions.find(item => item.value === filterType).label
-  );
-});
-
-// 加载书籍列表,确保所有数字字段都转换
-const loadBooksList = async () => {
-  try {
-    const res = await request.get('/api/books',{
-      params: {
-        searchName: props.searchValue
-      }
-    });
-    booksList.value = res.data.map(book => ({
-      ...book,
-      rating: Number(book.rating) || 0,
-      latestProgress: Number(book.latestProgress) || 0  
-    }));
-    console.log('书籍数据加载成功');
-  } catch (error) {
-    console.error('加载失败:', error);
-  }
-};
 
 // 进度条颜色
 const getProgressColor = (progress) => {
@@ -192,48 +150,34 @@ const editBook = (book) => {
   editDialogVisible.value = true;
 };
 
-// 提交编辑
+// 提交编辑 —— 成功后调 store.loadBooks() 刷新
 const submitEdit = async () => {
-  if (!editForm.value.title?.trim()) {
-    ElMessage.error('书名不能为空');
-    return;
-  }
-  if (!editForm.value.status) {
-    ElMessage.error('请选择阅读状态');
-    return;
-  }
+  if (!editForm.value.title?.trim()) { ElMessage.error('书名不能为空'); return }
+  if (!editForm.value.status) { ElMessage.error('请选择阅读状态'); return }
   try {
     const res = await request.put(`/api/books/${editForm.value.id}`, {
-      title: editForm.value.title.trim(),
-      author: editForm.value.author || '佚名',
-      type: editForm.value.type || '其他',
-      status: editForm.value.status,
-      highlight: editForm.value.highlight || '暂无简介',
-      cover: editForm.value.cover
-    });
-    ElMessage.success(res.message || '修改成功');
-    editDialogVisible.value = false;
-    await loadBooksList();
-  } catch (error) {
-    console.error(' 编辑失败:', error);
-  }
-};
-// 删除书籍
+      title: editForm.value.title.trim(), author: editForm.value.author || '佚名',
+      type: editForm.value.type || '其他', status: editForm.value.status,
+      highlight: editForm.value.highlight || '暂无简介', cover: editForm.value.cover
+    })
+    ElMessage.success(res.message || '修改成功')
+    editDialogVisible.value = false
+    await bookStore.loadBooks()    // ← 改这里：用 store 刷新
+  } catch (error) { console.error('编辑失败:', error) }
+}
+ 
+// 删除书籍 —— 用 store.removeBook 从列表移除
 const deleteBook = async (bookId) => {
   try {
     await ElMessageBox.confirm('确定要删除这本书吗？删除后无法恢复！', '警告', {
-      confirmButtonText: '确定删除',
-      cancelButtonText: '取消',
-      type: 'warning'
-    });
-    const res = await request.delete(`/api/books/${bookId}`);
-    ElMessage.success(res.message || '删除成功');
-    booksList.value = booksList.value.filter(book => book.id !== bookId);
-  } catch (error) {
-    if (error === 'cancel') return;
-    console.error(' 删除失败:', error);
-  }
-};
+      confirmButtonText: '确定删除', cancelButtonText: '取消', type: 'warning'
+    })
+    const res = await request.delete(`/api/books/${bookId}`)
+    ElMessage.success(res.message || '删除成功')
+    bookStore.removeBook(bookId)   // ← 改这里：用 store 移除
+  } catch (error) { if (error === 'cancel') return; console.error('删除失败:', error) }
+}
+
 // 更新评分
 const updateRating = async (book) => {
   try {
@@ -244,15 +188,9 @@ const updateRating = async (book) => {
   }
 };
 
-// 监听搜索值变化
-watch(() => props.searchValue, () => {
-   console.log('搜索关键词变化:', props.searchValue);
-  loadBooksList();
-});
-
 onMounted(() => {
-  loadBooksList();
-});
+  bookStore.loadBooks()  
+})
 </script>
 
 <style scoped>
