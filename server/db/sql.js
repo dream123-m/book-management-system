@@ -2,8 +2,8 @@ const mysql = require('mysql')
 
 let connection = mysql.createConnection({
     host:'localhost',
-    user:'root',
-    password:'123456', 
+    user:'xx',
+    password:'xxxx',  // 替换你的账号密码。
     database:'vuebooks'
 })
 
